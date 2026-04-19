@@ -2,6 +2,8 @@ package com.example.inventory.entity;
 
 import jakarta.persistence.*;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Entity
 @Table(name = "products")
@@ -30,9 +32,11 @@ public class Product {
     private Double unitSize;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<Stock> stocks;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<StockMovement> stockMovements;
 
     public Product() {}

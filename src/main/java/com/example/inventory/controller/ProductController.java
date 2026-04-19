@@ -1,7 +1,7 @@
 package com.example.inventory.controller;
 
 import com.example.inventory.dto.ProductRequest;
-import com.example.inventory.entity.Product;
+import com.example.inventory.dto.ProductResponse;
 import com.example.inventory.service.ProductService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,22 +18,22 @@ public class ProductController {
     private ProductService productService;
 
     @GetMapping
-    public ResponseEntity<List<Product>> getAllProducts() {
+    public ResponseEntity<List<ProductResponse>> getAllProducts() {
         return ResponseEntity.ok(productService.getAllProducts());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Product> getProductById(@PathVariable Long id) {
+    public ResponseEntity<ProductResponse> getProductById(@PathVariable Long id) {
         return ResponseEntity.ok(productService.getProductById(id));
     }
 
     @PostMapping
-    public ResponseEntity<Product> createProduct(@Valid @RequestBody ProductRequest request) {
+    public ResponseEntity<ProductResponse> createProduct(@Valid @RequestBody ProductRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(productService.createProduct(request));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Product> updateProduct(@PathVariable Long id, @Valid @RequestBody ProductRequest request) {
+    public ResponseEntity<ProductResponse> updateProduct(@PathVariable Long id, @Valid @RequestBody ProductRequest request) {
         return ResponseEntity.ok(productService.updateProduct(id, request));
     }
 

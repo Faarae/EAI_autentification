@@ -1,7 +1,7 @@
 package com.example.inventory.controller;
 
 import com.example.inventory.dto.WarehouseRequest;
-import com.example.inventory.entity.Warehouse;
+import com.example.inventory.dto.WarehouseResponse;
 import com.example.inventory.service.WarehouseService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,22 +18,22 @@ public class WarehouseController {
     private WarehouseService warehouseService;
 
     @GetMapping
-    public ResponseEntity<List<Warehouse>> getAllWarehouses() {
+    public ResponseEntity<List<WarehouseResponse>> getAllWarehouses() {
         return ResponseEntity.ok(warehouseService.getAllWarehouses());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Warehouse> getWarehouseById(@PathVariable Long id) {
+    public ResponseEntity<WarehouseResponse> getWarehouseById(@PathVariable Long id) {
         return ResponseEntity.ok(warehouseService.getWarehouseById(id));
     }
 
     @PostMapping
-    public ResponseEntity<Warehouse> createWarehouse(@Valid @RequestBody WarehouseRequest request) {
+    public ResponseEntity<WarehouseResponse> createWarehouse(@Valid @RequestBody WarehouseRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(warehouseService.createWarehouse(request));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Warehouse> updateWarehouse(@PathVariable Long id, @Valid @RequestBody WarehouseRequest request) {
+    public ResponseEntity<WarehouseResponse> updateWarehouse(@PathVariable Long id, @Valid @RequestBody WarehouseRequest request) {
         return ResponseEntity.ok(warehouseService.updateWarehouse(id, request));
     }
 

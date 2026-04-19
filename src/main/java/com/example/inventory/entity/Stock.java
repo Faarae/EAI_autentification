@@ -1,6 +1,7 @@
 package com.example.inventory.entity;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 @Entity
 @Table(name = "stocks", uniqueConstraints = @UniqueConstraint(columnNames = {"warehouse_id", "product_id"}))

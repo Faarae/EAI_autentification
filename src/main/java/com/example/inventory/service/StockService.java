@@ -1,13 +1,16 @@
 package com.example.inventory.service;
 
 import com.example.inventory.dto.StockRequest;
+import com.example.inventory.dto.StockResponse;
 import com.example.inventory.dto.StockMovementRequest;
+import com.example.inventory.dto.StockMovementResponse;
 import com.example.inventory.entity.*;
 import com.example.inventory.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class StockService {
@@ -27,16 +30,50 @@ public class StockService {
     @Autowired
     private InventoryAlertRepository inventoryAlertRepository;
 
-    public List<Stock> getAllStocks() {
-        return stockRepository.findAll();
+    private StockResponse convertToResponse(Stock stock) {
+        return new StockResponse(
+            stock.getId(),
+            stock.getWarehouse().getId(),
+            stock.getWarehouse().getName(),
+            stock.getProduct().getId(),
+            stock.getProduct().getName(),
+            stock.getQuantity(),
+            stock.getReservedQuantity(),
+            stock.getAvailableQuantity(),
+            stock.getMinimalStock(),
+            stock.getMaximalStock(),
+            stock.getLocation()
+        );
     }
 
-    public Stock getStockById(Long id) {
-        return stockRepository.findById(id)
+    private StockMovementResponse convertMovementToResponse(StockMovement movement) {
+        return new StockMovementResponse(
+            movement.getId(),
+            movement.getWarehouse().getId(),
+            movement.getWarehouse().getName(),
+            movement.getProduct().getId(),
+            movement.getProduct().getName(),
+            movement.getMovementType(),
+            movement.getQuantity(),
+            movement.getMovementDate(),
+            movement.getReference(),
+            movement.getNotes()
+        );
+    }
+
+    public List<StockResponse> getAllStocks() {
+        return stockRepository.findAll().stream()
+            .map(this::convertToResponse)
+            .collect(Collectors.toList());
+    }
+
+    public StockResponse getStockById(Long id) {
+        Stock stock = stockRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Stock not found with id: " + id));
+        return convertToResponse(stock);
     }
 
-    public Stock createStock(StockRequest request) {
+    public StockResponse createStock(StockRequest request) {
         Warehouse warehouse = warehouseRepository.findById(request.getWarehouseId())
             .orElseThrow(() -> new RuntimeException("Warehouse not found with id: " + request.getWarehouseId()));
 
@@ -63,20 +100,22 @@ public class StockService {
             inventoryAlertRepository.save(alert);
         }
 
-        return savedStock;
+        return convertToResponse(savedStock);
     }
 
-    public Stock updateStock(Long id, StockRequest request) {
-        Stock stock = getStockById(id);
+    public StockResponse updateStock(Long id, StockRequest request) {
+        Stock stock = stockRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Stock not found with id: " + id));
         stock.setQuantity(request.getQuantity());
         stock.setMinimalStock(request.getMinimalStock());
         stock.setMaximalStock(request.getMaximalStock());
         stock.setLocation(request.getLocation());
-        return stockRepository.save(stock);
+        Stock updatedStock = stockRepository.save(stock);
+        return convertToResponse(updatedStock);
     }
 
     @Transactional
-    public Stock moveStock(StockMovementRequest request) {
+    public StockMovementResponse moveStock(StockMovementRequest request) {
         Warehouse warehouse = warehouseRepository.findById(request.getWarehouseId())
             .orElseThrow(() -> new RuntimeException("Warehouse not found with id: " + request.getWarehouseId()));
 
@@ -108,7 +147,7 @@ public class StockService {
             request.getReference()
         );
         movement.setNotes(request.getNotes());
-        stockMovementRepository.save(movement);
+        StockMovement savedMovement = stockMovementRepository.save(movement);
 
         if (updatedStock.getQuantity() < updatedStock.getMinimalStock()) {
             InventoryAlert alert = new InventoryAlert(
@@ -120,11 +159,12 @@ public class StockService {
             inventoryAlertRepository.save(alert);
         }
 
-        return updatedStock;
+        return convertMovementToResponse(savedMovement);
     }
 
     public void deleteStock(Long id) {
-        Stock stock = getStockById(id);
+        Stock stock = stockRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Stock not found with id: " + id));
         stockRepository.delete(stock);
     }
 }
